@@ -1,0 +1,63 @@
+{
+  "id": "axeclefts-hoards",
+  "title": "Axecleft's Hoard Editor",
+  "description": "Build, save and edit treasure hoards for the D35E system. Each hoard is a lootable chest actor: roll SRD treasure into it by encounter level, fill it to the SRD treasure value for an encounter, add items by hand, gather the loot of fallen creatures, trap it and place it on a scene, share it out among the party, and save it to a file. Adds a Hoards tab to the Axecleft Treasure Generator (needs Axecleft's Gemstones, Armory or Curios).",
+  "version": "1.11.0.3",
+  "compatibility": {
+    "minimum": "11",
+    "verified": "11.315",
+    "maximum": "11"
+  },
+  "authors": [
+    {
+      "name": "Axecleft",
+      "url": "https://www.patreon.com/Axecleft",
+      "discord": "axecleft"
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "D35E",
+        "type": "system",
+        "compatibility": {
+          "minimum": "2.4.3"
+        }
+      }
+    ],
+    "recommends": [
+      {
+        "id": "axecleft-gemstones",
+        "type": "module",
+        "manifest": "https://github.com/Axecleft/Axeclefts-Gemstones-v11/releases/latest/download/module.json",
+        "reason": "The Treasure Generator the Hoards tab lives in (Armory or Curios also have it), plus gems, art and jewelry"
+      },
+      {
+        "id": "axeclefts-armory",
+        "type": "module",
+        "manifest": "https://github.com/Axecleft/Armory-v11/releases/latest/download/module.json",
+        "reason": "Magic weapons and armor for hoards"
+      },
+      {
+        "id": "axeclefts-curios",
+        "type": "module",
+        "manifest": "https://github.com/Axecleft/Curios-v11/releases/latest/download/module.json",
+        "reason": "Potions, scrolls, wands, rings and wondrous items for hoards"
+      },
+      {
+        "id": "traps-and-poisons",
+        "type": "module",
+        "manifest": "https://github.com/Axecleft/Traps-and-Poisons-v11/releases/latest/download/module.json",
+        "reason": "Trap actors for every SRD trap, to trap a hoard's chest"
+      }
+    ]
+  },
+  "esmodules": [
+    "scripts/axecleft-tools.js",
+    "scripts/hoards.js"
+  ],
+  "languages": [],
+  "manifest": "https://github.com/Axecleft/Axeclefts-Hoard-Editor-v11/releases/latest/download/module.json",
+  "download": "https://github.com/Axecleft/Axeclefts-Hoard-Editor-v11/releases/download/1.11.0.3/module.zip",
+  "url": "https://github.com/Axecleft/Axeclefts-Hoard-Editor-v11"
+}
