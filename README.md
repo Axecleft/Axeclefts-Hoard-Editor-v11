@@ -35,6 +35,12 @@ Four guided tours of the Hoards tab (GM only): **Hoards** (making, loading, savi
 
 Changelog:
 
+v1.11.0.4 (Foundry 11; the same as v1.14.0.4):
+
+- **One link installs the whole suite.** Every Axecleft module now recommends all the others (Gemstones, Armory, Curios, Traps, Adventurers and Minions, Hoard Editor, Printable Sheets, VooDoo and the Tools Suite manager), so installing any one of them offers to install the rest.
+- Ships Axecleft's Tools 9.74: **Help on hover**. In a window that has a tour, turn on **Help on hover** in its title bar's **Help** button and rest the mouse on a part of the window to see that part's tour text.
+- French: the translation files are up to date with the rest of the suite.
+
 v1.11.0.3 (Foundry 11; the same as v1.14.0.3):
 
 - **Gather loot:** sweep the token loot (or everything they carry) of fallen or selected creatures into the hoard after a fight.

@@ -71,7 +71,7 @@
  *
  * If two modules ship different versions of this file, the newest one wins.
  */
-const AXECLEFT_TOOLS_VERSION = 9.72; // 9.72: searchable lists take headings (<option data-heading label="Feats">) that divide the list; 9.71: the tours on Foundry v11 too (a Tour button in each window's title bar); 9.7: tours of each tab (Foundry v13+), in Tour Management and each window's ⋮ menu; 9.6: the Tool Suite settings button shows in each module's own settings (they all landed in one); 9.5: dice formulas with a function as the number of dice ("min(@cl,10)d6", D35E's Lightning Bolt) work on Foundry v14; 9.4: Join the Discord and Support on Patreon leave the Tools menu and the module settings for a welcome window at startup (turned off in the Tool Suite settings); 9.3: Support on Patreon and Join the Discord (buttons in each module's settings and in the menu); 9.2: the User Guide opens the wiki in Foundry's language (French, Spanish, Portuguese); 9.1: the User Guide button
+const AXECLEFT_TOOLS_VERSION = 9.74; // 9.74: help on hover (each toured window's ⋮ menu → Help on hover): the tour steps of the part the mouse rests on, as a pop-up; 9.73: a tour step's content can be a list of texts, so a step reuses the window's own sentences (one translation for both); 9.72: searchable lists take headings (<option data-heading label="Feats">) that divide the list; 9.71: the tours on Foundry v11 too (a Tour button in each window's title bar); 9.7: tours of each tab (Foundry v13+), in Tour Management and each window's ⋮ menu; 9.6: the Tool Suite settings button shows in each module's own settings (they all landed in one); 9.5: dice formulas with a function as the number of dice ("min(@cl,10)d6", D35E's Lightning Bolt) work on Foundry v14; 9.4: Join the Discord and Support on Patreon leave the Tools menu and the module settings for a welcome window at startup (turned off in the Tool Suite settings); 9.3: Support on Patreon and Join the Discord (buttons in each module's settings and in the menu); 9.2: the User Guide opens the wiki in Foundry's language (French, Spanish, Portuguese); 9.1: the User Guide button
 
 (() => {
   const LAYER = "axecleftTools";
@@ -1103,7 +1103,8 @@ const AXECLEFT_TOOLS_VERSION = 9.72; // 9.72: searchable lists take headings (<o
    *     app: "axecleft-treasure-generator",      // the window's id (or cls: a class of the window, for dialogs)
    *     tab: "t-axecleft-gemstones-gems",        // the tab it covers (for the window's ⋮ menu), optional
    *     open: async () => …,                     // opens the window on that tab
-   *     steps: [{ id, title, content,            // content: "\n" starts a new paragraph
+   *     steps: [{ id, title, content,            // content: "\n" starts a new paragraph; or a list of texts (9.73), each translated on
+   *                                              // its own and joined as sentences, so a step can reuse a window's own text
    *               field: "gem.grade" | sel: ".atg-tabs" (inside the window) | doc: "#chat" (anywhere) | nothing (centre),
    *               direction: "UP" | "DOWN" | "LEFT" | "RIGHT", gm: true }],
    *     next: ["axecleft-gemstones.art"],        // suggested when it ends
@@ -1263,6 +1264,16 @@ const AXECLEFT_TOOLS_VERSION = 9.72; // 9.72: searchable lists take headings (<o
       }
     };
   }
+  /**
+   * A step's text. A list of texts (9.73) is translated part by part and joined as sentences: each starts with a capital
+   * and ends with a full stop, so a window's own label or hint ("made together: one check, …") can be reused as it is.
+   */
+  const stepText = (c) => (!Array.isArray(c) ? t(c) : c.map((p) => {
+    let s = String(t(p) ?? "").trim();
+    if (!s) return "";
+    s = s.charAt(0).toLocaleUpperCase() + s.slice(1);
+    return /[.!?:…]$/.test(s) ? s : `${s}.`;
+  }).filter(Boolean).join(" "));
   /** The tours of a module, built when the world is ready (the language is loaded then). */
   const buildTour = (def) => {
     if (!AxecleftTour || !globalThis.game?.tours) return false;
@@ -1271,7 +1282,7 @@ const AXECLEFT_TOOLS_VERSION = 9.72; // 9.72: searchable lists take headings (<o
     const key = `${ns}.${def.id}`;
     if (game.tours.has(key)) return true;
     const steps = (def.steps ?? []).map((s) => ({
-      id: s.id, title: t(s.title), content: t(s.content), restricted: !!s.gm,
+      id: s.id, title: t(s.title), content: stepText(s.content), restricted: !!s.gm,
       ...(stepSelector(def, s) ? { selector: stepSelector(def, s) } : {}),
       ...(s.direction ? { tooltipDirection: s.direction } : {}),
     }));
@@ -1364,6 +1375,152 @@ const AXECLEFT_TOOLS_VERSION = 9.72; // 9.72: searchable lists take headings (<o
       });
     }
   }
+
+  /*
+   * 9.74: help on hover. The tours' own steps, shown one at a time as a small pop-up when the mouse rests on the part of
+   * the window a step points at, so a user gets help on one part without taking the whole tour (and the text is
+   * already translated). Off until the user turns it on: "Help on hover" in each toured window's ⋮ menu (a Help button
+   * in the title bar on Foundry v11). Remembered in this browser. A field's own tooltip wins over the step's text.
+   */
+  if (!globalThis.__axecleftHoverHelp) {
+    globalThis.__axecleftHoverHelp = true;
+    const KEY = "axecleft-tools.hoverHelp";
+    const DELAY = 600;
+    let on = false;
+    try { on = localStorage.getItem(KEY) === "1"; } catch (e) { /* storage blocked */ }
+    let box = null, timer = null, shownFor = null;
+    const A = () => globalThis.AxecleftTools;
+    const isShown = (el) => !!el && el.isConnected && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
+    const style = () => {
+      if (document.getElementById("axecleft-hover-help-style")) return;
+      const st = document.createElement("style");
+      st.id = "axecleft-hover-help-style";
+      st.textContent = `#axecleft-hover-help { position: fixed; z-index: 100000; max-width: 360px; padding: 6px 9px; pointer-events: none;
+          background: rgba(10, 10, 12, 0.94); color: #efe6d8; border: 1px solid var(--color-border-highlight, #ff6400); border-radius: 5px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.6); font-size: 13px; line-height: 1.35; text-align: left; }
+        #axecleft-hover-help h4 { margin: 0 0 4px; padding: 0; border: none; font-size: 14px; font-weight: bold; color: #ffd28a; }
+        #axecleft-hover-help p { margin: 0 0 4px; }
+        #axecleft-hover-help p:last-child { margin-bottom: 0; }`;
+      document.head.append(st);
+    };
+    const hide = () => { clearTimeout(timer); timer = null; shownFor = null; box?.remove(); box = null; };
+    /** The tab a window shows, as its tours know it (the same test as "Tour of this tab"). */
+    const currentTab = (root, id) => {
+      const inst = globalThis.foundry?.applications?.instances?.get?.(id) ?? Object.values(globalThis.ui?.windows ?? {}).find((w) => w?.id === id);
+      return root?.querySelector("[data-tab-btn].active")?.dataset.tabBtn ?? root?.querySelector("[data-kind-btn].active")?.dataset.kindBtn
+        ?? root?.querySelector("nav .item.active[data-tab]")?.dataset.tab ?? (typeof inst?.tab === "string" ? inst.tab : null);
+    };
+    /**
+     * The tour step for what the mouse is on: of the steps of the window's tours (its current tab's tour first), the one
+     * whose element holds the mouse most closely. Steps that point outside the window or at nothing are left out.
+     */
+    const stepAt = (target) => {
+      const api = A();
+      if (!api?.tourDefs || !globalThis.game?.tours) return null;
+      let best = null;
+      for (const [key, def] of api.tourDefs) {
+        const root = def.app ? document.getElementById(def.app) : def.cls ? target.closest?.(`.${CSS.escape(def.cls)}`) : null;
+        if (!root || !root.contains(target)) continue;
+        const tour = game.tours.get(key);
+        if (!tour || (tour.config.restricted && !game.user.isGM)) continue;
+        const tab = currentTab(root, def.app);
+        const tabRank = def.tab ? (def.tab === tab ? 0 : 2) : 1; // this tab's tour, then the window's own, then other tabs'
+        if (tabRank === 2) continue;
+        const given = new Map((def.steps ?? []).map((s) => [s.id, s]));
+        for (const step of tour.config.steps ?? []) {
+          if (!step.selector || (step.restricted && !game.user.isGM)) continue;
+          if (given.get(step.id)?.doc) continue; // points outside the window (the chat…)
+          let els;
+          try { els = root.parentElement ? [...root.parentElement.querySelectorAll(step.selector)] : [...document.querySelectorAll(step.selector)]; } catch (e) { continue; }
+          for (const el of els) {
+            if (!root.contains(el) || !el.contains(target) || !isShown(el)) continue;
+            // the closest element wins (fewest steps up from the mouse); on a tie, this tab's tour
+            let depth = 0;
+            for (let n = target; n && n !== el; n = n.parentElement) depth++;
+            if (!best || depth < best.depth || (depth === best.depth && tabRank < best.tabRank)) best = { step, el, depth, tabRank };
+          }
+        }
+      }
+      return best;
+    };
+    const paragraphs = (text) => String(text ?? "").split(/\n+/).map((p) => p.trim()).filter(Boolean).map((p) => `<p>${p}</p>`).join("");
+    const show = (hit, x, y) => {
+      style();
+      box?.remove();
+      box = document.createElement("div");
+      box.id = "axecleft-hover-help";
+      box.innerHTML = `${hit.step.title ? `<h4>${hit.step.title}</h4>` : ""}${paragraphs(hit.step.content)}`;
+      document.body.append(box);
+      // beside the mouse, kept on screen
+      const r = box.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;
+      let left = x + 16, top = y + 18;
+      if (left + r.width > vw - 8) left = Math.max(8, x - r.width - 16);
+      if (top + r.height > vh - 8) top = Math.max(8, y - r.height - 18);
+      box.style.left = `${left}px`;
+      box.style.top = `${top}px`;
+      shownFor = hit.el;
+    };
+    document.addEventListener("pointermove", (ev) => {
+      if (!on) return;
+      const target = ev.target;
+      if (!(target instanceof Element)) return hide();
+      if (shownFor && shownFor.contains(target) && !target.closest("[data-tooltip]")) return; // still on the same part
+      hide();
+      const TourBase = globalThis.foundry?.nue?.Tour ?? (typeof Tour !== "undefined" ? Tour : null);
+      if (TourBase?.activeTour) return; // a tour is running
+      const x = ev.clientX, y = ev.clientY;
+      timer = setTimeout(() => {
+        timer = null;
+        const hit = stepAt(target);
+        if (!hit) return;
+        // a field's own tooltip (inside the step's part) is shown by Foundry instead
+        const own = target.closest("[data-tooltip], [data-tooltip-html], [title]");
+        if (own && hit.el.contains(own) && own !== hit.el) return;
+        show(hit, x, y);
+      }, DELAY);
+    }, { passive: true });
+    for (const t of ["pointerdown", "wheel", "keydown", "blur"]) window.addEventListener(t, hide, { passive: true, capture: true });
+    document.addEventListener("pointerleave", hide);
+
+    /** Help on hover: AxecleftTools.hoverHelp.on, .toggle(). */
+    const hoverHelp = {
+      get on() { return on; },
+      toggle(value = !on) {
+        on = !!value;
+        try { localStorage.setItem(KEY, on ? "1" : "0"); } catch (e) { /* storage blocked */ }
+        if (!on) hide();
+        const t = A()?.t ?? ((x) => x);
+        ui.notifications?.info(on ? t(/*t*/"Help on hover is on: rest the mouse on a part of the window to see what it does.") : t(/*t*/"Help on hover is off."));
+        return on;
+      },
+    };
+    globalThis.__axecleftHoverHelpApi = hoverHelp;
+    /** Does this window have tours (so its steps can be shown on hover)? */
+    const hasTours = (app) => {
+      const api = A();
+      const id = app?.id ?? app?.options?.id;
+      if (!api?.tourDefs || !id) return false;
+      const classes = [...(app.options?.classes ?? [])];
+      return [...api.tourDefs.values()].some((d) => (d.app && d.app === id) || (d.cls && classes.includes(d.cls)));
+    };
+    // "Help on hover" in the ⋮ menu of each Axecleft window that has a tour (Foundry v13+)
+    Hooks.on("getHeaderControlsApplicationV2", (app, controls) => {
+      try {
+        if (!Array.isArray(controls) || controls.some((c) => c.action === "axecleftHoverHelp") || !hasTours(app)) return;
+        controls.push({ icon: "fas fa-circle-question", label: A().t(/*t*/"Help on hover"), action: "axecleftHoverHelp", onClick: () => hoverHelp.toggle() });
+      } catch (err) { console.warn("AxecleftTools | help on hover menu", err); }
+    });
+    // Foundry v11: a Help button in the title bar of each Axecleft window that has a tour
+    if (!foundry.applications?.api?.ApplicationV2) {
+      Hooks.on("getApplicationHeaderButtons", (app, buttons) => {
+        try {
+          if (!Array.isArray(buttons) || buttons.some((x) => x.class === "axecleft-hover-help") || !hasTours(app)) return;
+          buttons.unshift({ label: A().t(/*t*/"Help"), class: "axecleft-hover-help", icon: "fas fa-circle-question", onclick: () => hoverHelp.toggle() });
+        } catch (err) { console.warn("AxecleftTools | help on hover button", err); }
+      });
+    }
+  }
+  api.hoverHelp = globalThis.__axecleftHoverHelpApi;
 
   // Once, whichever version loads first; it always calls the newest API.
   if (!globalThis.__axecleftSupportMenus) {

@@ -2,7 +2,7 @@
   "id": "axeclefts-hoards",
   "title": "Axecleft's Hoard Editor",
   "description": "Build, save and edit treasure hoards for the D35E system. Each hoard is a lootable chest actor: roll SRD treasure into it by encounter level, fill it to the SRD treasure value for an encounter, add items by hand, gather the loot of fallen creatures, trap it and place it on a scene, share it out among the party, and save it to a file. Adds a Hoards tab to the Axecleft Treasure Generator (needs Axecleft's Gemstones, Armory or Curios).",
-  "version": "1.11.0.3",
+  "version": "1.11.0.4",
   "compatibility": {
     "minimum": "11",
     "verified": "11.315",
@@ -49,6 +49,30 @@
         "type": "module",
         "manifest": "https://github.com/Axecleft/Traps-and-Poisons-v11/releases/latest/download/module.json",
         "reason": "Trap actors for every SRD trap, to trap a hoard's chest"
+      },
+      {
+        "id": "axeclefts-adventurers-minions",
+        "type": "module",
+        "manifest": "https://github.com/Axecleft/Axeclefts-Adventurers-Minions-v11/releases/latest/download/module.json",
+        "reason": "Build characters, NPCs, creatures and encounters"
+      },
+      {
+        "id": "axeclefts-printable-sheets",
+        "type": "module",
+        "manifest": "https://github.com/Axecleft/Axeclefts-Printable-Sheets-v11/releases/latest/download/module.json",
+        "reason": "Print paper character sheets, stat blocks and spellbooks"
+      },
+      {
+        "id": "axeclefts-voodoo",
+        "type": "module",
+        "manifest": "https://github.com/Axecleft/Axeclefts-VooDoo-v11/releases/latest/download/module.json",
+        "reason": "A character sheet for your players' phones"
+      },
+      {
+        "id": "axeclefts-tool-suite",
+        "type": "module",
+        "manifest": "https://github.com/Axecleft/Axecleft-s-Tools-Suite/releases/latest/download/module.json",
+        "reason": "Turn the suite's modules on and off and check them for updates"
       }
     ]
   },
@@ -58,6 +82,6 @@
   ],
   "languages": [],
   "manifest": "https://github.com/Axecleft/Axeclefts-Hoard-Editor-v11/releases/latest/download/module.json",
-  "download": "https://github.com/Axecleft/Axeclefts-Hoard-Editor-v11/releases/download/1.11.0.3/module.zip",
+  "download": "https://github.com/Axecleft/Axeclefts-Hoard-Editor-v11/releases/download/1.11.0.4/module.zip",
   "url": "https://github.com/Axecleft/Axeclefts-Hoard-Editor-v11"
 }
